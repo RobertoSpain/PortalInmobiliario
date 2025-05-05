@@ -1,0 +1,92 @@
+<script setup>
+import { onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import Navbar from './components/layout/Navbar.vue';
+
+const auth = getAuth();
+const router = useRouter();
+
+// Verificar estado de autenticación cuando se inicia la aplicación
+onMounted(() => {
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // Usuario autenticado, redirigir a la página principal
+      router.push('/');
+    } else {
+      // Usuario no autenticado, redirigir a la página de inicio de sesión
+      router.push('/login');
+    }
+  });
+});
+</script>
+
+<template>
+  <div class="app-container">
+    <Navbar />
+    <main class="main-content">
+      <router-view />
+    </main>
+  </div>
+</template>
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Arial', sans-serif;
+}
+
+body {
+  background-color: #f2f4f8;
+}
+
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 80px auto 0; /* Ajustamos el margen superior para que no se superponga con el Navbar */
+  width: 100%;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin-bottom: 16px;
+}
+
+.btn {
+  cursor: pointer;
+  padding: 10px 15px;
+  border-radius: 4px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.btn-primary {
+  background-color: #00cc66;
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background-color: #00b359;
+}
+
+.card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+</style>
