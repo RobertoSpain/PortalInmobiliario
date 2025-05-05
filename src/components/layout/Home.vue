@@ -53,20 +53,17 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* Estilos generales */
 .home {
   padding: 20px 16px 80px 16px;
   background-color: #f7f8fc;
 }
 
-/* Título principal */
 .title {
   font-size: 36px;
   font-weight: bold;
   margin: 20px 0 16px 0;
 }
 
-/* Secciones */
 .section {
   margin-bottom: 24px;
 }
@@ -77,7 +74,6 @@ onMounted(() => {
   margin: 16px 0;
 }
 
-/* Listado destacado */
 .featured-listing {
   position: relative;
   width: 100%;
@@ -119,7 +115,6 @@ onMounted(() => {
   border-radius: 24px;
 }
 
-/* Categorías */
 .categories-grid {
   display: flex;
   gap: 16px;
@@ -133,29 +128,38 @@ onMounted(() => {
   border-radius: 8px;
   overflow: hidden;
   flex: 1;
+  background: #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.07);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 .category-image {
   width: 100%;
-  height: 100%;
+  height: 140px;
   object-fit: cover;
 }
 
-/* Media queries para pantallas más grandes */
+.category-label {
+  font-size: 1.2rem;
+  font-weight: 500;
+  padding: 12px 0 10px 0;
+  text-align: center;
+}
+
 @media (min-width: 768px) {
   .home {
     max-width: 1200px;
     margin: 0 auto;
   }
-  
   .featured-image {
     height: 300px;
   }
-  
   .categories-grid {
     flex-wrap: wrap;
   }
-  
   .category-card {
     min-width: 250px;
   }

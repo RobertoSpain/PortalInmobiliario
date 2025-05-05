@@ -20,11 +20,16 @@ onMounted(() => {
 
 const darAltaInmueble = () => router.push('/alta-inmueble');
 
-const loadUserOffers = async () => {
+const loadUserOffers = () => {
   if (!auth.currentUser) return;
   const q = query(collection(db, 'propiedades'), where('userId', '==', auth.currentUser.uid));
-  const snap =  getDocs(q);
-  userOffers.value = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  getDocs(q)
+    .then((snap) => {
+      userOffers.value = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    })
+    .catch((e) => {
+      console.error('Error cargando ofertas:', e);
+    });
 };
 
 const borrarOferta = async (id) => {
@@ -39,7 +44,7 @@ const logout = async () => {
 </script>
 
 <template>
-  <section class="profile-page">
+<section class="profile-page">
     <div class="profile-header">
       <h1>My Profile</h1>
       <button class="logout-btn" @click="logout">Logout</button>
