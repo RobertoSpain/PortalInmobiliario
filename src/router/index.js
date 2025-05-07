@@ -1,44 +1,48 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { getAuth } from 'firebase/auth';
 
-// Importa las vistas
-import Home from '../components/layout/Home.vue';
-import Offers from '../components/layout/Offers.vue';
-import Profile from '../components/layout/Profile.vue';
-import Login from '../components/layout/Login.vue';
-import AltaInmueble from '../components/layout/AltaInmueble.vue'; // <-- Añadido
-
-const routes = [
-  { path: '/', name: 'Home', component: Home },
-  { path: '/offers', name: 'Offers', component: Offers },
-  {
-    path: '/profile',
-    name: 'Profile',
-    component: Profile,
-    meta: { requiresAuth: true }, 
-  },
-  { path: '/alta-inmueble', name: 'AltaInmueble', component: AltaInmueble, meta: { requiresAuth: true } }, // <-- Añadido
-  { path: '/login', name: 'Login', component: Login },
-];
-
 const router = createRouter({
   history: createWebHistory(),
-  routes,
+  routes: [
+    {
+      path: '/',
+      name: 'home',
+      component: () => import('../components/layout/Home.vue'), // Lazy loading para Home
+    },
+    {
+      path: '/offers',
+      name: 'offers',
+      component: () => import('../components/layout/Offers.vue'), // Lazy loading para Offers
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: () => import('../components/layout/Profile.vue'), // Lazy loading para Profile
+      meta: { requiresAuth: true }, // Ruta protegida
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import('../components/layout/Login.vue'), // Lazy loading para Login
+    },
+    {
+      path: '/alta-inmueble',
+      name: 'alta-inmueble',
+      component: () => import('../components/layout/AltaInmueble.vue'), // Lazy loading para AltaInmueble
+      meta: { requiresAuth: true }, // Ruta protegida
+    },
+  ],
 });
 
-// Verificar autenticación antes de acceder a rutas protegidas
+// Protección de rutas (verifica autenticación)
 router.beforeEach((to, from, next) => {
   const auth = getAuth();
   const user = auth.currentUser;
 
-  if (to.matched.some((record) => record.meta.requiresAuth)) {
-    if (user) {
-      next(); 
-    } else {
-      next('/login'); 
-    }
+  if (to.meta.requiresAuth && !user) {
+    next('/login'); // Redirige a login si no está autenticado
   } else {
-    next(); 
+    next(); // Permite el acceso
   }
 });
 
