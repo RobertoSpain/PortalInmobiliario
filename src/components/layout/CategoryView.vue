@@ -37,7 +37,16 @@ onMounted(() => {
         <div class="property-info">
           <h3>{{ property.titulo }}</h3>
           <p><b>Address:</b> {{ property.direccion }}</p>
-          <p><b>Price:</b> €{{ property.precio }}</p>
+          <p class="price">
+            <span v-if="property.oferta">
+              <b>Price:</b> <span class="discount">{{ property.precio - (property.descuento || 0) }} €</span>
+              <span class="old-price">{{ property.precio }} €</span>
+              <span class="discount-label">-{{ property.descuento }}€</span>
+            </span>
+            <span v-else>
+              <b>Price:</b> {{ property.precio }} €
+            </span>
+          </p>
           <p><b>Bedrooms:</b> {{ property.dormitorios }}</p>
           <p><b>Bathrooms:</b> {{ property.banos }}</p>
         </div>
@@ -80,5 +89,26 @@ onMounted(() => {
   margin-bottom: 8px;
   font-size: 18px;
   font-weight: bold;
+}
+
+.price {
+  margin: 8px 0;
+}
+
+.discount {
+  color: #00cc66;
+  font-weight: bold;
+}
+
+.old-price {
+  text-decoration: line-through;
+  color: #888;
+  margin-left: 8px;
+}
+
+.discount-label {
+  color: red;
+  font-weight: bold;
+  margin-left: 8px;
 }
 </style>

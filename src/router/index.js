@@ -31,6 +31,11 @@ const router = createRouter({
       component: () => import('../components/layout/AltaInmueble.vue'), // Lazy loading para AltaInmueble
       meta: { requiresAuth: true }, // Ruta protegida
     },
+    {
+      path: '/category/:category',
+      name: 'category',
+      component: () => import('../components/layout/CategoryView.vue'), // Lazy loading
+    },
   ],
 });
 

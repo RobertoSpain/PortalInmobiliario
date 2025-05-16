@@ -44,7 +44,7 @@ const logout = async () => {
 </script>
 
 <template>
-<section class="profile-page">
+  <section class="profile-page">
     <div class="profile-header">
       <h1>My Profile</h1>
       <button class="logout-btn" @click="logout">Logout</button>
@@ -73,7 +73,16 @@ const logout = async () => {
           <div class="offer-info">
             <div class="offer-address">{{ oferta.direccion }}</div>
             <div class="offer-title">{{ oferta.titulo }}</div>
-            <div class="offer-price">€{{ oferta.precio }}</div>
+            <p class="offer-price">
+              <span v-if="oferta.oferta">
+                <b>Price:</b> <span class="discount">{{ oferta.precio - (oferta.descuento || 0) }} €</span>
+                <span class="old-price">{{ oferta.precio }} €</span>
+                <span class="discount-label">-{{ oferta.descuento }}€</span>
+              </span>
+              <span v-else>
+                <b>Price:</b> {{ oferta.precio }} €
+              </span>
+            </p>
             <div class="offer-icons">
               <span>🛏️ {{ oferta.dormitorios }} Bedrooms</span>
               <span>🛁 {{ oferta.banos }} Bathrooms</span>
@@ -196,10 +205,21 @@ const logout = async () => {
   color: #222;
 }
 .offer-price {
+  margin: 8px 0;
+}
+.discount {
   color: #00cc66;
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin: 2px 0 2px 0;
+  font-weight: bold;
+}
+.old-price {
+  text-decoration: line-through;
+  color: #888;
+  margin-left: 8px;
+}
+.discount-label {
+  color: red;
+  font-weight: bold;
+  margin-left: 8px;
 }
 .offer-icons {
   display: flex;

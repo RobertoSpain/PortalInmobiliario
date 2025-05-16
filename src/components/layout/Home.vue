@@ -3,20 +3,25 @@ import { ref, onMounted } from 'vue';
 import { db } from '../../firebasej';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 
-const sales = ref([]);
-const rentals = ref([]);
+const featuredProperties = ref([]);
+const currentIndex = ref(0);
 
 onMounted(() => {
-  // Propiedades en venta
-  const salesQuery = query(collection(db, 'propiedades'), where('tipo', '==', 'venta'));
-  getDocs(salesQuery).then(salesSnap => {
-    sales.value = salesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  });
-
-  // Propiedades en alquiler
-  const rentalsQuery = query(collection(db, 'propiedades'), where('tipo', '==', 'alquiler'));
-  getDocs(rentalsQuery).then(rentalsSnap => {
-    rentals.value = rentalsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  // Obtener propiedades en oferta directamente de la base de datos
+  const offersQuery = query(collection(db, 'propiedades'), where('oferta', '==', true));
+  
+  getDocs(offersQuery).then(snapshot => {
+    featuredProperties.value = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    
+    // Activar carrusel si hay propiedades
+    if (featuredProperties.value.length > 0) {
+      setInterval(() => {
+        currentIndex.value = (currentIndex.value + 1) % featuredProperties.value.length;
+      }, 3000);
+    }
   });
 });
 </script>
@@ -24,35 +29,174 @@ onMounted(() => {
 <template>
   <section class="home">
     <h1 class="title">Explore</h1>
-    
+
+    <!-- Sección de propiedades destacadas -->
     <div class="section">
       <h2 class="section-title">Recommended</h2>
-      <div class="featured-listing">
-        <img src="https://via.placeholder.com/800x400" alt="Casa en el campo" class="featured-image" />
-        <div class="listing-overlay">
-          <h3 class="listing-title">casa en el campo</h3>
-          <div class="price-tag">$150000</div>
+      
+      <!-- Carrusel simple -->
+      <div v-if="featuredProperties.length > 0" class="carousel">
+        <div 
+          v-for="(property, index) in featuredProperties" 
+          :key="property.id" 
+          class="carousel-item" 
+          :class="{ active: index === currentIndex }"
+        >
+          <img 
+            :src="property.imagen" 
+            :alt="property.titulo" 
+            class="carousel-image" 
+          />
+          <div class="carousel-title-bar">
+            <h3 class="carousel-title">{{ property.titulo }}</h3>
+          </div>
+          <div class="carousel-overlay">
+            <div class="price-tag">${{ property.precio }}</div>
+          </div>
+        </div>
+        
+        <!-- Indicadores de puntos -->
+        <div class="carousel-dots">
+          <span 
+            v-for="(_, idx) in featuredProperties" 
+            :key="idx" 
+            :class="['dot', { active: idx === currentIndex }]"
+          />
         </div>
       </div>
+      
+      <!-- Mensaje si no hay propiedades -->
+      <div v-else class="empty-state">
+        <p>No hay propiedades destacadas disponibles.</p>
+      </div>
     </div>
-    
+
+    <!-- Categorías -->
     <div class="section">
       <h2 class="section-title">Categories</h2>
       <div class="categories-grid">
-        <div class="category-card">
-          <img src="/img/sale.jpg" alt="Apartamento" class="category-image" />
-          <div class="category-label">Places for rent</div>
-        </div>
-        <div class="category-card">
-          <img src="/img/renta.jpg" alt="Apartamento" class="category-image" />
-          <div class="category-label">Places for sale</div>
-        </div>
+        <!-- Categoría: Places for Rent -->
+        <router-link to="/category/alquiler" class="category-card">
+          <img src="/img/renta.jpg" alt="Apartamentos en alquiler" class="category-image" />
+          <div class="category-label">Places for Rent</div>
+        </router-link>
+
+        <!-- Categoría: Places for Sale -->
+        <router-link to="/category/venta" class="category-card">
+          <img src="/img/sale.jpg" alt="Propiedades en venta" class="category-image" />
+          <div class="category-label">Places for Sale</div>
+        </router-link>
       </div>
     </div>
   </section>
 </template>
 
 <style scoped>
+.carousel {
+  position: relative;
+  width: 100%;
+  height: 350px;
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  margin-bottom: 24px;
+}
+
+.carousel-item {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.8s ease-in-out;
+  z-index: 1;
+}
+
+.carousel-item.active {
+  opacity: 1;
+  z-index: 2;
+}
+
+.carousel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.carousel-title-bar {
+  position: absolute;
+  left: 0;
+  bottom: 60px;
+  width: 100%;
+  background: rgba(0,0,0,0.7);
+  padding: 16px 0 16px 24px;
+  z-index: 3;
+}
+
+.carousel-title {
+  color: white;
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin: 0;
+  text-shadow: 1px 1px 8px rgba(0,0,0,0.5);
+}
+
+.carousel-overlay {
+  position: absolute;
+  left: 24px;
+  bottom: 16px;
+  z-index: 4;
+}
+
+.price-tag {
+  background-color: white;
+  color: black;
+  font-weight: bold;
+  display: inline-block;
+  padding: 8px 24px;
+  border-radius: 24px;
+  font-size: 1.4rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.carousel-dots {
+  position: absolute;
+  right: 24px;
+  bottom: 16px;
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0.5;
+  transition: opacity 0.3s;
+  border: 2px solid #fff;
+}
+
+.dot.active {
+  opacity: 1;
+  background: #222;
+  border: 2px solid #fff;
+}
+
+.empty-state {
+  width: 100%;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
 .home {
   padding: 20px 16px 80px 16px;
   background-color: #f7f8fc;
@@ -74,47 +218,6 @@ onMounted(() => {
   margin: 16px 0;
 }
 
-.featured-listing {
-  position: relative;
-  width: 100%;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.featured-image {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-}
-
-.listing-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  padding: 16px;
-  width: 100%;
-}
-
-.listing-title {
-  color: white;
-  font-size: 24px;
-  font-weight: bold;
-  background-color: rgba(0,0,0,0.7);
-  display: inline-block;
-  padding: 8px 16px;
-  margin-bottom: 8px;
-}
-
-.price-tag {
-  background-color: white;
-  color: black;
-  font-weight: bold;
-  display: inline-block;
-  padding: 8px 16px;
-  border-radius: 24px;
-}
-
 .categories-grid {
   display: flex;
   gap: 16px;
@@ -134,6 +237,8 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
+  text-decoration: none;
+  color: inherit;
 }
 
 .category-image {
@@ -154,8 +259,8 @@ onMounted(() => {
     max-width: 1200px;
     margin: 0 auto;
   }
-  .featured-image {
-    height: 300px;
+  .carousel {
+    height: 400px;
   }
   .categories-grid {
     flex-wrap: wrap;
