@@ -15,13 +15,6 @@ onMounted(() => {
       id: doc.id,
       ...doc.data()
     }));
-    
-    // Activar carrusel si hay propiedades
-    if (featuredProperties.value.length > 0) {
-      setInterval(() => {
-        currentIndex.value = (currentIndex.value + 1) % featuredProperties.value.length;
-      }, 3000);
-    }
   });
 });
 </script>
@@ -34,7 +27,7 @@ onMounted(() => {
     <div class="section">
       <h2 class="section-title">Recommended</h2>
       
-      <!-- Carrusel simple -->
+      <!-- Carrusel controlado por el usuario -->
       <div v-if="featuredProperties.length > 0" class="carousel">
         <div 
           v-for="(property, index) in featuredProperties" 
@@ -55,12 +48,14 @@ onMounted(() => {
           </div>
         </div>
         
-        <!-- Indicadores de puntos -->
+        <!-- Indicadores de puntos clicables -->
         <div class="carousel-dots">
           <span 
             v-for="(_, idx) in featuredProperties" 
             :key="idx" 
             :class="['dot', { active: idx === currentIndex }]"
+            @click="currentIndex = idx"
+            style="cursor:pointer;"
           />
         </div>
       </div>

@@ -2,8 +2,10 @@
 import { ref, onMounted } from 'vue';
 import { db } from '../../firebasej';
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import { useRoute } from 'vue-router';
+import { useRoute} from 'vue-router';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 const properties = ref([]);
 const route = useRoute(); // Obtener la ruta actual
 const category = ref(route.params.category); // Obtener la categoría desde los parámetros de la ruta
@@ -19,6 +21,9 @@ onMounted(() => {
     properties.value = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   });
 });
+function goToDetail(id) {
+  router.push(`/property/${id}`);
+}
 </script>
 
 <template>
@@ -28,7 +33,7 @@ onMounted(() => {
       No properties available in this category.
     </div>
     <div v-else class="properties-grid">
-      <div v-for="property in properties" :key="property.id" class="property-card">
+      <div v-for="property in properties" :key="property.id" class="property-card" @click="goToDetail(property.id)" style="cursor:pointer;">
         <img
           :src="property.imagenes?.[0] || 'https://via.placeholder.com/300x200'"
           alt="Property Image"

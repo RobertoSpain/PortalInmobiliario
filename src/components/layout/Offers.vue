@@ -2,7 +2,9 @@
 import { ref, onMounted } from 'vue';
 import { db } from '../../firebasej';
 import { collection, getDocs, query, where } from 'firebase/firestore';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 const offers = ref([]);
 
 onMounted(() => {
@@ -11,6 +13,10 @@ onMounted(() => {
     offers.value = offersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   });
 });
+
+function goToDetail(id) {
+  router.push(`/property/${id}`);
+}
 </script>
 
 <template>
@@ -20,7 +26,7 @@ onMounted(() => {
       No hay ofertas disponibles en este momento.
     </div>
     <div v-else class="listings">
-      <div v-for="item in offers" :key="item.id" class="listing-card">
+      <div v-for="item in offers" :key="item.id" class="listing-card" @click="goToDetail(item.id)" style="cursor:pointer;">
         <div class="images">
           <img
             v-for="(img, idx) in (item.imagenes || []).slice(0, 4)"

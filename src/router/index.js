@@ -36,6 +36,11 @@ const router = createRouter({
       name: 'category',
       component: () => import('../components/layout/CategoryView.vue'), // Lazy loading
     },
+    {
+      path: '/property/:id',
+      name: 'PropertyDetail',
+      component: () => import('../components/layout/PropertyDetail.vue'),
+    },
   ],
 });
 
