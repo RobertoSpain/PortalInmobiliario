@@ -1,7 +1,14 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, updateProfile } from 'firebase/auth';
+import { 
+  getAuth, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signInWithRedirect, 
+  GoogleAuthProvider, 
+  updateProfile 
+} from 'firebase/auth';
 
 const email = ref('');
 const password = ref('');
@@ -38,10 +45,7 @@ const handleSubmit = () => {
 };
 
 const loginWithGoogle = () => {
-  signInWithPopup(getAuth(), new GoogleAuthProvider())
-    .then(() => {
-      router.push('/');
-    })
+  signInWithRedirect(getAuth(), new GoogleAuthProvider())
     .catch((error) => {
       alert('Error: ' + error.message);
     });
@@ -139,11 +143,6 @@ const toggleMode = () => {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-body {
-  background-color: #f5f5f8;
-  min-height: 100vh;
-  padding: 20px;
-}
 
 .login-container {
   max-width: 500px;
