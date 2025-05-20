@@ -5,7 +5,7 @@ import {
   getAuth, 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
-  signInWithRedirect, 
+  signInWithPopup, 
   GoogleAuthProvider, 
   updateProfile 
 } from 'firebase/auth';
@@ -45,7 +45,10 @@ const handleSubmit = () => {
 };
 
 const loginWithGoogle = () => {
-  signInWithRedirect(getAuth(), new GoogleAuthProvider())
+  signInWithPopup(getAuth(), new GoogleAuthProvider())
+    .then(() => {
+      router.push('/');
+    })
     .catch((error) => {
       alert('Error: ' + error.message);
     });
@@ -134,6 +137,7 @@ const toggleMode = () => {
     </div>
   </div>
 </template>
+
 
 <style>
 * {
