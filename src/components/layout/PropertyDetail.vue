@@ -31,7 +31,14 @@ onMounted(async () => {
       <div class="property-info-flex">
         <div class="property-info-block">
           <h1 class="property-title">
-            {{ property.titulo }} <span v-if="property.precio">- {{ property.precio }}</span>
+            {{ property.titulo }}
+            <span v-if="typeof property.oferta === 'number' && property.oferta < property.precio">
+              - <span style="color:#00b359;font-weight:700">{{ property.oferta }}€</span>
+              <span style="text-decoration:line-through;color:#888;font-size:1.2rem;margin-left:10px">{{ property.precio }}€</span>
+            </span>
+            <span v-else-if="property.precio">
+              - {{ property.precio }}€
+            </span>
           </h1>
           <div class="property-address">{{ property.direccion }}</div>
           <div class="category-badge" v-if="property.tipo">
@@ -78,6 +85,7 @@ onMounted(async () => {
   background: #f7f8fc;
   box-sizing: border-box;
   overflow-x: hidden;
+  padding-bottom: 120px;
 }
 
 .main-image-bar {
@@ -208,28 +216,30 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   margin: 48px 0 0 0;
+  background: transparent;
 }
 
 .contact-btn {
-  width: 80%;
+  width: 90%;
   max-width: 900px;
   background: #00d264;
   color: #fff;
   border: none;
   border-radius: 32px;
-  padding: 28px 0;
+  padding: 32px 0;
   font-size: 2rem;
   font-weight: 700;
   cursor: pointer;
   transition: background 0.2s;
   text-align: center;
-  box-shadow: none;
+  box-shadow: 0 4px 16px rgba(0, 204, 102, 0.15);
+  margin: 0 auto;
+  display: block;
 }
 
 .contact-btn:hover {
   background: #00b359;
 }
-
 
 @media (max-width: 900px) {
   .main-img-bar, .main-image-bar {
