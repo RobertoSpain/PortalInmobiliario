@@ -7,8 +7,8 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const properties = ref([]);
-const route = useRoute(); // Obtener la ruta actual
-const category = ref(route.params.category); // Obtener la categoría desde los parámetros de la ruta
+const route = useRoute(); 
+const category = ref(route.params.category); 
 
 onMounted(() => {
   // Consultar propiedades según la categoría

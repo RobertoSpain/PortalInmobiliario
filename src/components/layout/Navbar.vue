@@ -30,15 +30,15 @@
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 70px; /* Aumentado de 60px para hacer la barra más alta */
+  height: 70px; 
   background-color: white;
   display: flex;
-  justify-content: space-evenly; /* Cambiado de space-between para acercar las secciones */
+  justify-content: space-evenly; 
   align-items: center;
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
   z-index: 1000;
   border-top: 1px solid #e0e0e0;
-  padding: 0; /* Eliminado cualquier padding que pudiera separar los elementos */
+  padding: 0; 
 }
 
 .nav-item {
@@ -51,7 +51,7 @@
   text-decoration: none;
   transition: color 0.2s;
   height: 100%;
-  max-width: 15%; /* Para asegurar que las tres secciones ocupen el mismo espacio */
+  max-width: 15%; 
 }
 
 .nav-icon-container {
