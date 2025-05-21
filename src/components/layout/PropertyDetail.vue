@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { db } from '../../firebasej';
 import { doc, getDoc } from 'firebase/firestore';
@@ -7,6 +7,7 @@ import { doc, getDoc } from 'firebase/firestore';
 const route = useRoute();
 const property = ref(null);
 const loading = ref(true);
+const imageIndex = ref(0);
 
 onMounted(async () => {
   const id = route.params.id;
@@ -18,6 +19,23 @@ onMounted(async () => {
   }
   loading.value = false;
 });
+
+const totalImages = computed(() => property.value?.imagenes?.length || 0);
+
+function prevImage() {
+  if (totalImages.value > 0) {
+    imageIndex.value = (imageIndex.value - 1 + totalImages.value) % totalImages.value;
+  }
+}
+function nextImage() {
+  if (totalImages.value > 0) {
+    imageIndex.value = (imageIndex.value + 1) % totalImages.value;
+  }
+}
+
+watch(property, () => {
+  imageIndex.value = 0;
+});
 </script>
 
 <template>
@@ -26,7 +44,16 @@ onMounted(async () => {
     <div v-else-if="property" class="property-content">
       <!-- Imagen principal grande -->
       <div class="main-image-bar">
-        <img :src="property.imagenes?.[0] || 'https://via.placeholder.com/1200x350'" class="main-img-bar" />
+        <img :src="property.imagenes?.[imageIndex] || 'https://via.placeholder.com/1200x350'" class="main-img-bar" />
+        <!-- Controles del carrusel -->
+        <div class="carousel-controls" v-if="totalImages > 1">
+          <button @click="prevImage" class="control-btn prev-btn">‹</button>
+          <button @click="nextImage" class="control-btn next-btn">›</button>
+        </div>
+        <!-- Dots del carrusel -->
+        <div v-if="totalImages > 1" class="carousel-dots-detail">
+          <span v-for="(img, idx) in property.imagenes" :key="idx" :class="['dot', { active: idx === imageIndex }]" @click="imageIndex = idx"></span>
+        </div>
       </div>
       <div class="property-info-flex">
         <div class="property-info-block">
@@ -93,6 +120,7 @@ onMounted(async () => {
   max-width: 100vw;
   margin: 0;
   background: #222;
+  position: relative;
 }
 
 .main-img-bar {
@@ -239,6 +267,56 @@ onMounted(async () => {
 
 .contact-btn:hover {
   background: #00b359;
+}
+
+/* Estilos del carrusel de imágenes */
+.carousel-controls {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: space-between;
+  padding: 0 32px;
+}
+
+.control-btn {
+  background: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 1.5rem;
+  color: #222;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.control-btn:hover {
+  background: rgba(255, 255, 255, 1);
+}
+
+.carousel-dots-detail {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.dot.active {
+  background: #00d264;
 }
 
 @media (max-width: 900px) {

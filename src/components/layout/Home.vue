@@ -36,7 +36,7 @@ onMounted(() => {
           :class="{ active: index === currentIndex }"
         >
           <img 
-            :src="property.imagen" 
+            :src="(property.imagenes && property.imagenes[0]) || '/img/default.jpg'" 
             :alt="property.titulo" 
             class="carousel-image" 
           />
@@ -44,7 +44,16 @@ onMounted(() => {
             <h3 class="carousel-title">{{ property.titulo }}</h3>
           </div>
           <div class="carousel-overlay">
-            <div class="price-tag">${{ property.precio }}</div>
+            <div class="price-tag">
+              <template v-if="property.descuento && property.descuento > 0">
+                ${{ property.precio - property.descuento }}
+                <span class="old-price" style="text-decoration:line-through; color:#888; margin-left:8px;">€{{ property.precio }}</span>
+                <span class="discount-label" style="color:#e53935; margin-left:8px;">-{{ property.descuento }}€</span>
+              </template>
+              <template v-else>
+                €{{ property.precio }}
+              </template>
+            </div>
           </div>
         </div>
         
