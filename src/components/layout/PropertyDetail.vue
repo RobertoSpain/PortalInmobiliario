@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, computed, watch, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import { db } from '../../firebasej';
 import { doc, getDoc } from 'firebase/firestore';
@@ -9,16 +9,42 @@ const property = ref(null);
 const loading = ref(true);
 const imageIndex = ref(0);
 
-onMounted(async () => {
+onMounted(() => {
   const id = route.params.id;
   if (!id) return;
   const docRef = doc(db, 'propiedades', id);
-  const docSnap = await getDoc(docRef);
-  if (docSnap.exists()) {
-    property.value = { id: docSnap.id, ...docSnap.data() };
-  }
-  loading.value = false;
+  getDoc(docRef).then(docSnap => {
+    if (docSnap.exists()) {
+      property.value = { id: docSnap.id, ...docSnap.data() };
+    }
+    loading.value = false;
+    // Leaflet solo si hay coordenadas
+    if (property.value && property.value.lat && property.value.lng) {
+      if (!window.L) {
+        const leafletCss = document.createElement('link');
+        leafletCss.rel = 'stylesheet';
+        leafletCss.href = 'https://unpkg.com/leaflet/dist/leaflet.css';
+        document.head.appendChild(leafletCss);
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/leaflet/dist/leaflet.js';
+        script.onload = () => initMap();
+        document.body.appendChild(script);
+      } else {
+        initMap();
+      }
+    }
+  });
 });
+
+function initMap() {
+  const L = window.L;
+  const map = L.map('map').setView([property.value.lat, property.value.lng], 13);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(map);
+  L.marker([property.value.lat, property.value.lng]).addTo(map)
+    .bindPopup(property.value.titulo || 'Propiedad').openPopup();
+}
 
 const totalImages = computed(() => property.value?.imagenes?.length || 0);
 
@@ -89,7 +115,7 @@ watch(property, () => {
       <div class="location-block">
         <div class="location-title">Location</div>
         <div class="map-static">
-          <img src="https://static-maps.yandex.ru/1.x/?lang=en-US&ll=-5.073,50.418&z=12&l=map&size=800,300" alt="Static map" class="map-img" />
+          <div id="map" class="map-img"></div>
         </div>
       </div>
       <!-- Botón grande -->
