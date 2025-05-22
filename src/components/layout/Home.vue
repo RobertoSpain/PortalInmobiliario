@@ -6,36 +6,39 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 const carouselProperties = ref([]); 
 const currentIndex = ref(0); // Para controlar el carrusel
 
-onMounted(async () => {
+onMounted(() => {
   // 1. Obtener una propiedad aleatoria en oferta
   const offersQuery = query(collection(db, 'propiedades'), where('oferta', '==', true));
-  const offersSnapshot = await getDocs(offersQuery);
-  const offers = offersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  let ofertaDestacada = null;
-  if (offers.length > 0) {
-    ofertaDestacada = offers[Math.floor(Math.random() * offers.length)];
-  }
+  getDocs(offersQuery).then(offersSnapshot => {
+    const offers = offersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    let ofertaDestacada = null;
+    if (offers.length > 0) {
+      ofertaDestacada = offers[Math.floor(Math.random() * offers.length)];
+    }
 
-  // 2. Obtener las 2 últimas de alquiler
-  const alquilerQuery = query(collection(db, 'propiedades'), where('tipo', '==', 'alquiler'));
-  const alquilerSnapshot = await getDocs(alquilerQuery);
-  const alquileres = alquilerSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  alquileres.sort((a, b) => b.fechaAlta?.toMillis?.() - a.fechaAlta?.toMillis?.());
-  const ultimosAlquiler = alquileres.slice(0, 2);
+    // 2. Obtener las 2 últimas de alquiler
+    const alquilerQuery = query(collection(db, 'propiedades'), where('tipo', '==', 'alquiler'));
+    getDocs(alquilerQuery).then(alquilerSnapshot => {
+      const alquileres = alquilerSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      alquileres.sort((a, b) => b.fechaAlta?.toMillis?.() - a.fechaAlta?.toMillis?.());
+      const ultimosAlquiler = alquileres.slice(0, 2);
 
-  // 3. Obtener las 2 últimas de venta
-  const ventaQuery = query(collection(db, 'propiedades'), where('tipo', '==', 'venta'));
-  const ventaSnapshot = await getDocs(ventaQuery);
-  const ventas = ventaSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  ventas.sort((a, b) => b.fechaAlta?.toMillis?.() - a.fechaAlta?.toMillis?.());
-  const ultimasVentas = ventas.slice(0, 2);
+      // 3. Obtener las 2 últimas de venta
+      const ventaQuery = query(collection(db, 'propiedades'), where('tipo', '==', 'venta'));
+      getDocs(ventaQuery).then(ventaSnapshot => {
+        const ventas = ventaSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        ventas.sort((a, b) => b.fechaAlta?.toMillis?.() - a.fechaAlta?.toMillis?.());
+        const ultimasVentas = ventas.slice(0, 2);
 
-  // 4. Unir en el orden: oferta, 2 alquiler, 2 venta (modo sencillo)
-  carouselProperties.value = [];
-  if (ofertaDestacada) carouselProperties.value.push(ofertaDestacada);
-  ultimosAlquiler.forEach(p => carouselProperties.value.push(p));
-  ultimasVentas.forEach(p => carouselProperties.value.push(p));
-  currentIndex.value = 0; // Siempre empieza en la primera
+        // 4. Unir en el orden: oferta, 2 alquiler, 2 venta (modo sencillo)
+        carouselProperties.value = [];
+        if (ofertaDestacada) carouselProperties.value.push(ofertaDestacada);
+        ultimosAlquiler.forEach(p => carouselProperties.value.push(p));
+        ultimasVentas.forEach(p => carouselProperties.value.push(p));
+        currentIndex.value = 0; // Siempre empieza en la primera
+      });
+    });
+  });
 });
 </script>
 

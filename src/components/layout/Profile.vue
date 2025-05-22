@@ -32,12 +32,12 @@ const loadUserOffers = () => {
     });
 };
 
-const borrarOferta = async (id) => {
+const borrarOferta = (id) => {
   deleteDoc(doc(db, 'propiedades', id));
   userOffers.value = userOffers.value.filter(oferta => oferta.id !== id);
 };
 
-const logout = async () => {
+const logout = () => {
   signOut(auth);
   router.push('/login');
 };
