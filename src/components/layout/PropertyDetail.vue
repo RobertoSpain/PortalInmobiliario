@@ -111,7 +111,7 @@ watch(property, () => {
           </div>
         </div>
       </div>
-      <!-- Mapa estático -->
+      <!-- Mapa interactivo con Leaflet -->
       <div class="location-block">
         <div class="location-title">Location</div>
         <div class="map-static">

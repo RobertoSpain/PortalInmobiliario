@@ -1,54 +1,34 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import { getAuth } from 'firebase/auth';
+import { createRouter, createWebHistory } from 'vue-router'; 
+import Home from '../components/layout/Home.vue';
+import Login from '../components/layout/Login.vue';
+import Offers from '../components/layout/Offers.vue';
+import Profile from '../components/layout/Profile.vue';
+import AltaInmueble from '../components/layout/AltaInmueble.vue';
+import CategoryView from '../components/layout/CategoryView.vue';
+import PropertyDetail from '../components/layout/PropertyDetail.vue';
 
+// Definición de rutas
+const routes = [
+  { path: '/', name: 'home', component: Home },
+  { path: '/offers', name: 'offers', component: Offers },
+  { path: '/profile', name: 'profile', component: Profile, meta: { requiresAuth: true } },
+  { path: '/login', name: 'login', component: Login },
+  { path: '/alta-inmueble', name: 'alta-inmueble', component: AltaInmueble, meta: { requiresAuth: true } },
+  { path: '/category/:category', name: 'category', component: CategoryView },
+  { path: '/property/:id', name: 'PropertyDetail', component: PropertyDetail },
+];
+
+// Crea el enrutador utilizando historial HTML5 (sin hash # en la URL)
 const router = createRouter({
   history: createWebHistory(),
-  routes: [
-    {
-      path: '/',
-      name: 'home',
-      component: () => import('../components/layout/Home.vue'), // Lazy loading para Home
-    },
-    {
-      path: '/offers',
-      name: 'offers',
-      component: () => import('../components/layout/Offers.vue'), // Lazy loading para Offers
-    },
-    {
-      path: '/profile',
-      name: 'profile',
-      component: () => import('../components/layout/Profile.vue'), // Lazy loading para Profile
-      meta: { requiresAuth: true }, // Ruta protegida
-    },
-    {
-      path: '/login',
-      name: 'login',
-      component: () => import('../components/layout/Login.vue'), // Lazy loading para Login
-    },
-    {
-      path: '/alta-inmueble',
-      name: 'alta-inmueble',
-      component: () => import('../components/layout/AltaInmueble.vue'), // Lazy loading para AltaInmueble
-      meta: { requiresAuth: true }, // Ruta protegida
-    },
-    {
-      path: '/category/:category',
-      name: 'category',
-      component: () => import('../components/layout/CategoryView.vue'), // Lazy loading
-    },
-    {
-      path: '/property/:id',
-      name: 'PropertyDetail',
-      component: () => import('../components/layout/PropertyDetail.vue'),
-    },
-  ],
+  routes,
 });
 
 // Protección de rutas (verifica autenticación)
+import { getAuth } from 'firebase/auth';
 router.beforeEach((to, from, next) => {
   const auth = getAuth();
   const user = auth.currentUser;
-
   if (to.meta.requiresAuth && !user) {
     next('/login'); // Redirige a login si no está autenticado
   } else {
@@ -56,4 +36,4 @@ router.beforeEach((to, from, next) => {
   }
 });
 
-export default router;
+export default router; 
