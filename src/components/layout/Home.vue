@@ -3,34 +3,51 @@ import { ref, onMounted } from 'vue';
 import { db } from '../../firebasej';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 
-const featuredProperties = ref([]);
-const currentIndex = ref(0);
+const carouselProperties = ref([]); 
+const currentIndex = ref(0); // Para controlar el carrusel
 
-onMounted(() => {
-  // Obtener propiedades en oferta directamente de la base de datos
+onMounted(async () => {
+  // 1. Obtener una propiedad aleatoria en oferta
   const offersQuery = query(collection(db, 'propiedades'), where('oferta', '==', true));
-  
-  getDocs(offersQuery).then(snapshot => {
-    featuredProperties.value = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-  });
+  const offersSnapshot = await getDocs(offersQuery);
+  const offers = offersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  let ofertaDestacada = null;
+  if (offers.length > 0) {
+    ofertaDestacada = offers[Math.floor(Math.random() * offers.length)];
+  }
+
+  // 2. Obtener las 2 últimas de alquiler
+  const alquilerQuery = query(collection(db, 'propiedades'), where('tipo', '==', 'alquiler'));
+  const alquilerSnapshot = await getDocs(alquilerQuery);
+  const alquileres = alquilerSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  alquileres.sort((a, b) => b.fechaAlta?.toMillis?.() - a.fechaAlta?.toMillis?.());
+  const ultimosAlquiler = alquileres.slice(0, 2);
+
+  // 3. Obtener las 2 últimas de venta
+  const ventaQuery = query(collection(db, 'propiedades'), where('tipo', '==', 'venta'));
+  const ventaSnapshot = await getDocs(ventaQuery);
+  const ventas = ventaSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  ventas.sort((a, b) => b.fechaAlta?.toMillis?.() - a.fechaAlta?.toMillis?.());
+  const ultimasVentas = ventas.slice(0, 2);
+
+  // 4. Unir en el orden: oferta, 2 alquiler, 2 venta (modo sencillo)
+  carouselProperties.value = [];
+  if (ofertaDestacada) carouselProperties.value.push(ofertaDestacada);
+  ultimosAlquiler.forEach(p => carouselProperties.value.push(p));
+  ultimasVentas.forEach(p => carouselProperties.value.push(p));
+  currentIndex.value = 0; // Siempre empieza en la primera
 });
 </script>
 
 <template>
   <section class="home">
     <h1 class="title">Explore</h1>
-
-    <!-- Sección de propiedades destacadas -->
+    <!-- Carrusel de 5 propiedades: 1 oferta, 2 alquiler, 2 venta -->
     <div class="section">
       <h2 class="section-title">Recommended</h2>
-      
-      <!-- Carrusel controlado por el usuario -->
-      <div v-if="featuredProperties.length > 0" class="carousel">
+      <div v-if="carouselProperties.length > 0" class="carousel">
         <div 
-          v-for="(property, index) in featuredProperties" 
+          v-for="(property, index) in carouselProperties" 
           :key="property.id" 
           class="carousel-item" 
           :class="{ active: index === currentIndex }"
@@ -46,7 +63,7 @@ onMounted(() => {
           <div class="carousel-overlay">
             <div class="price-tag">
               <template v-if="property.descuento && property.descuento > 0">
-                ${{ property.precio - property.descuento }}
+                €{{ property.precio - property.descuento }}
                 <span class="old-price" style="text-decoration:line-through; color:#888; margin-left:8px;">€{{ property.precio }}</span>
                 <span class="discount-label" style="color:#e53935; margin-left:8px;">-{{ property.descuento }}€</span>
               </template>
@@ -56,11 +73,10 @@ onMounted(() => {
             </div>
           </div>
         </div>
-        
-        <!-- Indicadores de puntos clicables -->
+        <!-- Puntos del carrusel -->
         <div class="carousel-dots">
           <span 
-            v-for="(_, idx) in featuredProperties" 
+            v-for="(_, idx) in carouselProperties" 
             :key="idx" 
             :class="['dot', { active: idx === currentIndex }]"
             @click="currentIndex = idx"
@@ -68,8 +84,6 @@ onMounted(() => {
           />
         </div>
       </div>
-      
-      <!-- Mensaje si no hay propiedades -->
       <div v-else class="empty-state">
         <p>No hay propiedades destacadas disponibles.</p>
       </div>
