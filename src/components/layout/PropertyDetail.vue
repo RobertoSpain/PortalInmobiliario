@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, watch, nextTick } from 'vue';
+import { ref, onMounted, computed, watch, } from 'vue';
 import { useRoute } from 'vue-router';
 import { db } from '../../firebasej';
 import { doc, getDoc } from 'firebase/firestore';
