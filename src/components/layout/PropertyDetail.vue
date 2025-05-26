@@ -120,6 +120,12 @@ watch(property, () => {
             <div class="feature-item">
               <span class="feature-value">{{ property.banos }}</span>
               <span class="feature-label">Bathroom</span>
+              <div class="feature-item" v-if="property.garaje">
+            </div>
+            </div>
+            <div class="feature-item" v-if="property.garaje">
+              <span class="feature-value">{{ property.garaje }}</span>
+              <span class="feature-label">Garage</span>
             </div>
           </div>
         </div>
@@ -287,15 +293,15 @@ watch(property, () => {
 }
 
 .contact-btn {
-  width: 90%;
-  max-width: 900px;
+  width: 80%;
+  max-width: 280px;
   background: #00d264;
   color: #fff;
   border: none;
   border-radius: 32px;
   padding: 32px 0;
   font-size: 2rem;
-  font-weight: 700;
+  font-weight: 200;
   cursor: pointer;
   transition: background 0.2s;
   text-align: center;

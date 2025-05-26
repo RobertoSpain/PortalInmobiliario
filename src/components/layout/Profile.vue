@@ -14,13 +14,13 @@ onMounted(() => {
   if (auth.currentUser) {
     displayName.value = auth.currentUser.displayName || '';
     email.value = auth.currentUser.email || '';
-    loadUserOffers();
+    loadUser();
   }
 });
 
 const darAltaInmueble = () => router.push('/alta-inmueble');
 
-const loadUserOffers = () => {
+const loadUser = () => {
   if (!auth.currentUser) return;
   const q = query(collection(db, 'propiedades'), where('userId', '==', auth.currentUser.uid));
   getDocs(q)
