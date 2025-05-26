@@ -8,6 +8,7 @@ const route = useRoute();
 const property = ref(null);
 const loading = ref(true);
 const imageIndex = ref(0);
+const formattedAddress = ref('');
 
 onMounted(() => {
   const id = route.params.id;
@@ -20,6 +21,7 @@ onMounted(() => {
     loading.value = false;
     // Leaflet solo si hay coordenadas
     if (property.value && property.value.lat && property.value.lng) {
+      fetchAddressFromCoords(property.value.lat, property.value.lng);
       if (!window.L) {
         const leafletCss = document.createElement('link');
         leafletCss.rel = 'stylesheet';
@@ -35,6 +37,17 @@ onMounted(() => {
     }
   });
 });
+
+function fetchAddressFromCoords(lat, lng) {
+  fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`)
+    .then(res => res.json())
+    .then(data => {
+      formattedAddress.value = data.display_name || '';
+    })
+    .catch(() => {
+      formattedAddress.value = '';
+    });
+}
 
 function initMap() {
   const L = window.L;
@@ -93,7 +106,7 @@ watch(property, () => {
               - {{ property.precio }}€
             </span>
           </h1>
-          <div class="property-address">{{ property.direccion }}</div>
+          <div class="property-address">{{ formattedAddress || property.direccion }}</div>
           <div class="category-badge" v-if="property.tipo">
             <span :class="['badge', property.tipo === 'alquiler' ? 'rent' : 'sale']">
               {{ property.tipo === 'alquiler' ? 'For Rent' : 'For Sale' }}

@@ -16,6 +16,7 @@ const oferta = ref(false);
 const precio = ref(0);
 const descuento = ref(0);
 const imagenes = ref([]);
+const coordenadas = ref({ lat: null, lng: null });
 
 const handleImageChange = (e) => {
   const files = e.target.files;
@@ -29,7 +30,45 @@ const handleImageChange = (e) => {
   }
 };
 
-const crearInmueble = () => {
+// Función para convertir dirección a coordenadas
+const geocodificarDireccion = async (direccion) => {
+  if (!direccion.trim()) {
+    alert('Por favor, ingresa una dirección');
+    return false;
+  }
+
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(direccion)}&limit=1`
+    );
+    const data = await response.json();
+    
+    if (data && data.length > 0) {
+      coordenadas.value = {
+        lat: parseFloat(data[0].lat),
+        lng: parseFloat(data[0].lon)
+      };
+      console.log('Coordenadas encontradas:', coordenadas.value);
+      return true;
+    } else {
+      alert('No se pudo encontrar la dirección. Verifica que sea correcta.');
+      return false;
+    }
+  } catch (error) {
+    console.error('Error en geocoding:', error);
+    alert('Error al buscar la dirección');
+    return false;
+  }
+};
+
+const crearInmueble = async () => {
+  // Primero geocodificar la dirección
+  const coordsEncontradas = await geocodificarDireccion(direccion.value);
+  
+  if (!coordsEncontradas) {
+    return; // No crear si no se encontraron coordenadas
+  }
+
   const inmueble = {
     userId: auth.currentUser ? auth.currentUser.uid : '',
     tipo: tipo.value,
@@ -37,11 +76,14 @@ const crearInmueble = () => {
     dormitorios: dormitorios.value,
     banos: banos.value,
     direccion: direccion.value,
+    lat: coordenadas.value.lat,
+    lng: coordenadas.value.lng,
     oferta: oferta.value,
     precio: precio.value,
     descuento: oferta.value ? descuento.value : 0,
     imagenes: imagenes.value,
   };
+
   addDoc(collection(db, 'propiedades'), inmueble)
     .then(() => {
       router.push('/profile');
@@ -72,9 +114,16 @@ const crearInmueble = () => {
         <label>Bathrooms</label>
         <input v-model.number="banos" type="number" min="1" max="20" required />
       </div>
-      <div class="form-row">
+      <div class="form-row address-row">
         <label>Address</label>
-        <textarea v-model="direccion" required></textarea>
+        <textarea v-model="direccion" required placeholder="Ej: Calle Ángel Barrios 15, Madrid, España"></textarea>
+        <button type="button" @click="geocodificarDireccion(direccion)" class="test-btn">
+          📍 Test Address
+        </button>
+      </div>
+      <div v-if="coordenadas.lat && coordenadas.lng" class="coordinates-info">
+        <span class="coords-label">✅ Coordinates found:</span>
+        <span class="coords-values">{{ coordenadas.lat.toFixed(4) }}, {{ coordenadas.lng.toFixed(4) }}</span>
       </div>
       <div class="form-row">
         <label>Offer</label>
