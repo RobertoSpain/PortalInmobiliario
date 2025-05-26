@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, watch, } from 'vue';
+import { ref, onMounted, computed, watch, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import { db } from '../../firebasej';
 import { doc, getDoc } from 'firebase/firestore';
@@ -9,6 +9,7 @@ const property = ref(null);
 const loading = ref(true);
 const imageIndex = ref(0);
 const formattedAddress = ref('');
+let mapInstance = null;
 
 onMounted(() => {
   const id = route.params.id;
@@ -29,10 +30,12 @@ onMounted(() => {
         document.head.appendChild(leafletCss);
         const script = document.createElement('script');
         script.src = 'https://unpkg.com/leaflet/dist/leaflet.js';
-        script.onload = () => initMap();
+        script.onload = () => {
+          nextTick().then(() => initMap());
+        };
         document.body.appendChild(script);
       } else {
-        initMap();
+        nextTick().then(() => initMap());
       }
     }
   });
@@ -51,11 +54,20 @@ function fetchAddressFromCoords(lat, lng) {
 
 function initMap() {
   const L = window.L;
-  const map = L.map('map').setView([property.value.lat, property.value.lng], 13);
+  // Limpia el div si ya hay un mapa
+  const mapDiv = document.getElementById('map');
+  if (mapDiv) {
+    mapDiv.innerHTML = '';
+  }
+  if (mapInstance) {
+    mapInstance.remove();
+    mapInstance = null;
+  }
+  mapInstance = L.map('map').setView([property.value.lat, property.value.lng], 13);
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-  }).addTo(map);
-  L.marker([property.value.lat, property.value.lng]).addTo(map)
+  }).addTo(mapInstance);
+  L.marker([property.value.lat, property.value.lng]).addTo(mapInstance)
     .bindPopup(property.value.titulo || 'Propiedad').openPopup();
 }
 
@@ -120,12 +132,10 @@ watch(property, () => {
             <div class="feature-item">
               <span class="feature-value">{{ property.banos }}</span>
               <span class="feature-label">Bathroom</span>
-              <div class="feature-item" v-if="property.garaje">
             </div>
-            </div>
-            <div class="feature-item" v-if="property.garaje">
-              <span class="feature-value">{{ property.garaje }}</span>
-              <span class="feature-label">Garage</span>
+            <div class="feature-item" v-if="property.parking">
+              <span class="feature-value">{{ property.parking }}</span>
+              <span class="feature-label">Parking</span>
             </div>
           </div>
         </div>
@@ -134,7 +144,7 @@ watch(property, () => {
       <div class="location-block">
         <div class="location-title">Location</div>
         <div class="map-static">
-          <div id="map" class="map-img"></div>
+          <div id="map" class="leaflet-map"></div>
         </div>
       </div>
       <!-- Botón grande -->
@@ -276,12 +286,10 @@ watch(property, () => {
   margin-bottom: 24px;
 }
 
-.map-img {
+.leaflet-map {
   width: 100%;
-  min-width: 100%;
   height: 300px;
-  object-fit: cover;
-  display: block;
+  min-height: 220px;
 }
 
 .contact-bar {
@@ -294,7 +302,7 @@ watch(property, () => {
 
 .contact-btn {
   width: 80%;
-  max-width: 280px;
+  max-width: 320px;
   background: #00d264;
   color: #fff;
   border: none;
