@@ -17,6 +17,7 @@ const precio = ref(0);
 const descuento = ref(0);
 const imagenes = ref([]);
 const coordenadas = ref({ lat: null, lng: null });
+const parking = ref(null); 
 
 const handleImageChange = (e) => {
   const files = e.target.files;
@@ -82,6 +83,7 @@ const crearInmueble = async () => {
     precio: precio.value,
     descuento: oferta.value ? descuento.value : 0,
     imagenes: imagenes.value,
+    parking: parking.value, 
   };
 
   addDoc(collection(db, 'propiedades'), inmueble)
@@ -110,9 +112,13 @@ const crearInmueble = async () => {
       </div>
       <div class="form-row">
         <label>Bedrooms</label>
-        <input v-model.number="dormitorios" type="number" min="1" max="20" required />
+          <input v-model.number="dormitorios" type="number" min="1" max="20" required />
         <label>Bathrooms</label>
-        <input v-model.number="banos" type="number" min="1" max="20" required />
+          <input v-model.number="banos" type="number" min="1" max="20" required />
+        <label>Parking</label>
+          <button type="button" :class="{ active: parking === 'yes' }" @click="parking = 'yes'">Yes</button>
+          <button type="button" :class="{ active: parking === 'no' }" @click="parking = 'no'">No</button>
+          <button v-if="parking !== null" type="button" @click="parking = null" class="clear-btn">✕</button>
       </div>
       <div class="form-row address-row">
         <label>Address</label>

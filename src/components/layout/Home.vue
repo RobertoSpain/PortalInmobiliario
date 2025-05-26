@@ -15,7 +15,6 @@ onMounted(() => {
     if (offers.length > 0) {
       ofertaDestacada = offers[Math.floor(Math.random() * offers.length)];
     }
-
     // 2. Obtener las 2 últimas de alquiler
     const alquilerQuery = query(collection(db, 'propiedades'), where('tipo', '==', 'alquiler'));
     getDocs(alquilerQuery).then(alquilerSnapshot => {
