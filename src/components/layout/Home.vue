@@ -4,7 +4,7 @@ import { db } from '../../firebasej';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 
 const carouselProperties = ref([]); 
-const currentIndex = ref(0); // Para controlar el carrusel
+const currentIndex = ref(0); // Para controlar las propiedades del carrusel
 
 onMounted(() => {
   // 1. Obtener una propiedad aleatoria en oferta
