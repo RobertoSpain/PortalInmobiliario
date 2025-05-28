@@ -118,7 +118,6 @@ const crearInmueble = async () => {
         <label>Parking</label>
           <button type="button" :class="{ active: parking === 'yes' }" @click="parking = 'yes'">Yes</button>
           <button type="button" :class="{ active: parking === 'no' }" @click="parking = 'no'">No</button>
-          <button v-if="parking !== null" type="button" @click="parking = null" class="clear-btn">✕</button>
       </div>
       <div class="form-row address-row">
         <label>Address</label>
@@ -166,7 +165,7 @@ h1 {
   margin-bottom: 18px;
 }
 .alta-form {
-  max-width: 600px;
+  max-width: 700px;
   margin: 0 auto;
   background: #fff;
   border-radius: 18px;
