@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue';
 import { db } from '../../firebasej';
 import { collection, getDocs } from 'firebase/firestore';
 
-const productos = ref([]); // Productos aleatorios para el carrusel
+const productos = ref([]); 
 const currentIndex = ref(0); // Para controlar el carrusel
 const cargando = ref(true);
 
@@ -11,7 +11,7 @@ function obtenerProductos() {
   getDocs(collection(db, 'propiedades'))
     .then((querySnapshot) => {
       const productosObtenidos = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      // Mezcla aleatoriamente todos los productos y toma los primeros 5
+      // Toma aleatoriamente todos los productos y muestra primeros 5
       const productosAleatorios = productosObtenidos.sort(() => Math.random() - 0.5).slice(0, 5);
       productos.value = productosAleatorios;
     })
