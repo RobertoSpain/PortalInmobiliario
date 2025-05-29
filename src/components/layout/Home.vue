@@ -1,44 +1,64 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { db } from '../../firebasej';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 
-const carouselProperties = ref([]); 
-const currentIndex = ref(0); // Para controlar las propiedades del carrusel
+const productos = ref([]); // Productos aleatorios para el carrusel
+const currentIndex = ref(0); // Para controlar el carrusel
+const cargando = ref(true);
 
+function obtenerProductos() {
+  getDocs(collection(db, 'propiedades'))
+    .then((querySnapshot) => {
+      const productosObtenidos = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      // Mezcla aleatoriamente todos los productos y toma los primeros 5
+      const productosAleatorios = productosObtenidos.sort(() => Math.random() - 0.5).slice(0, 5);
+      productos.value = productosAleatorios;
+    })
+    .catch(error => {
+      console.error('Error al cargar los productos:', error);
+    })
+    .finally(() => {
+      cargando.value = false;
+    });
+}
+
+onMounted(() => {
+  obtenerProductos();
+});
 
 </script>
 
 <template>
   <section class="home">
     <h1 class="title">Explore</h1>
-    <!-- Carrusel de 5 propiedades: 1 oferta, 2 alquiler, 2 venta -->
+    <!-- Carrusel de productos aleatorios -->
     <div class="section">
       <h2 class="section-title">Recommended</h2>
-      <div v-if="carouselProperties.length > 0" class="carousel">
+      <div v-if="!cargando && productos.length > 0" class="carousel">
         <div 
-          v-for="(property, index) in carouselProperties" 
-          :key="property.id" 
+          v-for="(producto, idx) in productos" 
+          :key="producto.id" 
           class="carousel-item" 
-          :class="{ active: index === currentIndex }"
+          :class="{ active: idx === currentIndex }"
         >
           <img 
-            :src="(property.imagenes && property.imagenes[0]) || '/img/default.jpg'" 
-            :alt="property.titulo" 
+            :src="(producto.imagenes && producto.imagenes[0]) || '/img/default.jpg'" 
+            :alt="producto.titulo" 
             class="carousel-image" 
           />
           <div class="carousel-title-bar">
-            <h3 class="carousel-title">{{ property.titulo }}</h3>
+            <h3 class="carousel-title">{{ producto.titulo }}</h3>
           </div>
           <div class="carousel-overlay">
             <div class="price-tag">
-              <template v-if="property.descuento && property.descuento > 0">
-                €{{ property.precio - property.descuento }}
-                <span class="old-price" style="text-decoration:line-through; color:#888; margin-left:8px;">€{{ property.precio }}</span>
-                <span class="discount-label" style="color:#e53935; margin-left:8px;">-{{ property.descuento }}€</span>
+              <template v-if="producto.descuento && producto.descuento > 0">
+                €{{ producto.precio - producto.descuento }}
+                <span class="old-price" style="text-decoration:line-through; color:#888; margin-left:8px;">€{{ producto.precio }}</span>
+                <span class="discount-label" style="color:#e53935; margin-left:8px;">-{{ producto.descuento }}€</span>
               </template>
               <template v-else>
-                €{{ property.precio }}
+                €{{ producto.precio }}
               </template>
             </div>
           </div>
@@ -46,7 +66,7 @@ const currentIndex = ref(0); // Para controlar las propiedades del carrusel
         <!-- Puntos del carrusel -->
         <div class="carousel-dots">
           <span 
-            v-for="(_, idx) in carouselProperties" 
+            v-for="(_, idx) in productos" 
             :key="idx" 
             :class="['dot', { active: idx === currentIndex }]"
             @click="currentIndex = idx"
@@ -54,8 +74,11 @@ const currentIndex = ref(0); // Para controlar las propiedades del carrusel
           />
         </div>
       </div>
+      <div v-else-if="!cargando" class="empty-state">
+        <p>No hay productos aleatorios disponibles.</p>
+      </div>
       <div v-else class="empty-state">
-        <p>No hay propiedades destacadas disponibles.</p>
+        <p>Cargando productos...</p>
       </div>
     </div>
 
@@ -77,6 +100,27 @@ const currentIndex = ref(0); // Para controlar las propiedades del carrusel
       </div>
     </div>
   </section>
+  <!-- Bottom Navigation Bar -->
+  <nav class="bottom-nav">
+    <router-link to="/" class="nav-item" exact-active-class="active">
+      <span class="nav-icon">
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#222" stroke-width="2" fill="none"/><path d="M8 12h8M12 8v8" stroke="#222" stroke-width="2" stroke-linecap="round"/></svg>
+      </span>
+      <span class="nav-label">Explore</span>
+    </router-link>
+    <router-link to="/offers" class="nav-item" exact-active-class="active">
+      <span class="nav-icon">
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><rect x="4" y="7" width="16" height="13" rx="2" stroke="#888" stroke-width="2"/><path d="M8 7V5a4 4 0 1 1 8 0v2" stroke="#888" stroke-width="2"/></svg>
+      </span>
+      <span class="nav-label">Offers</span>
+    </router-link>
+    <router-link to="/profile" class="nav-item" exact-active-class="active">
+      <span class="nav-icon">
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" stroke="#888" stroke-width="2"/><path d="M4 20c0-2.21 3.582-4 8-4s8 1.79 8 4" stroke="#888" stroke-width="2"/></svg>
+      </span>
+      <span class="nav-label">Profile</span>
+    </router-link>
+  </nav>
 </template>
 
 <style scoped>
@@ -242,6 +286,51 @@ const currentIndex = ref(0); // Para controlar las propiedades del carrusel
   text-align: center;
 }
 
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 80px;
+  background: #fff;
+  box-shadow: 0 -2px 12px rgba(0,0,0,0.07);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 100;
+  border-top: 1px solid #eee;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+  flex: 1;
+  transition: color 0.2s;
+}
+
+.nav-item.active,
+.nav-item.router-link-exact-active {
+  color: #222;
+}
+
+.nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.nav-label {
+  font-size: 1rem;
+  margin-top: 2px;
+}
+
 @media (min-width: 768px) {
   .home {
     max-width: 1200px;
@@ -255,6 +344,9 @@ const currentIndex = ref(0); // Para controlar las propiedades del carrusel
   }
   .category-card {
     min-width: 250px;
+  }
+  .bottom-nav {
+    display: none;
   }
 }
 </style>
