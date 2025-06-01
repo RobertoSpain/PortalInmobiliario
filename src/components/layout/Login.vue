@@ -54,6 +54,7 @@ const loginWithGoogle = () => {
     });
 };
 
+// Alterna la visibilidad de la contraseña
 const togglePassword = () => {
   showPassword.value = !showPassword.value;
 };

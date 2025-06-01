@@ -2,8 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { db } from '../../firebasej';
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import { useRoute} from 'vue-router';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
 const properties = ref([]);

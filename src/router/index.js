@@ -26,7 +26,7 @@ const router = createRouter({
 
 // Protección de rutas (verifica autenticación)
 import { getAuth } from 'firebase/auth';
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, next) => {
   const auth = getAuth();
   const user = auth.currentUser;
   if (to.meta.requiresAuth && !user) {
