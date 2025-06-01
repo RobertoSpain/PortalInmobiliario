@@ -103,21 +103,15 @@ onMounted(() => {
   <!-- Bottom Navigation Bar -->
   <nav class="bottom-nav">
     <router-link to="/" class="nav-item" exact-active-class="active">
-      <span class="nav-icon">
-        <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#222" stroke-width="2" fill="none"/><path d="M8 12h8M12 8v8" stroke="#222" stroke-width="2" stroke-linecap="round"/></svg>
-      </span>
+      <span class="material-icons nav-icon">explore</span>
       <span class="nav-label">Explore</span>
     </router-link>
     <router-link to="/offers" class="nav-item" exact-active-class="active">
-      <span class="nav-icon">
-        <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><rect x="4" y="7" width="16" height="13" rx="2" stroke="#888" stroke-width="2"/><path d="M8 7V5a4 4 0 1 1 8 0v2" stroke="#888" stroke-width="2"/></svg>
-      </span>
+      <span class="material-icons nav-icon">local_offer</span>
       <span class="nav-label">Offers</span>
     </router-link>
     <router-link to="/profile" class="nav-item" exact-active-class="active">
-      <span class="nav-icon">
-        <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" stroke="#888" stroke-width="2"/><path d="M4 20c0-2.21 3.582-4 8-4s8 1.79 8 4" stroke="#888" stroke-width="2"/></svg>
-      </span>
+      <span class="material-icons nav-icon">person_outline</span>
       <span class="nav-label">Profile</span>
     </router-link>
   </nav>
