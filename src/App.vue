@@ -1,24 +1,5 @@
 <script setup>
-import { onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import Navbar from './components/layout/Navbar.vue';
-
-const auth = getAuth();
-const router = useRouter();
-
-// Verificar estado de autenticación cuando se inicia la aplicación
-onMounted(() => {
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      // Usuario autenticado, redirigir a la página principal
-      router.push('/');
-    } else {
-      // Usuario no autenticado, redirigir a la página de inicio de sesión
-      router.push('/login');
-    }
-  });
-});
 </script>
 
 <template>
