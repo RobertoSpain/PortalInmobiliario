@@ -1,52 +1,62 @@
 <script setup>
-import { ref, onMounted } from 'vue';
-import { db } from '../../firebasej';
-import { collection, getDocs, query, where } from 'firebase/firestore';
-import { useRoute, useRouter } from 'vue-router';
+import { ref, onMounted } from 'vue'; // ref para variables reactivas y onMounted para ejecutar código al montar el componente
+import { db } from '../../firebasej'; // Importa la configuración de Firebase
+import { collection, getDocs, query, where } from 'firebase/firestore'; // Métodos para interactuar con Firestore
+import { useRoute, useRouter } from 'vue-router'; // useRoute para acceder a los parámetros de la ruta y useRouter para navegación
 
-const router = useRouter();
-const properties = ref([]);
-const route = useRoute(); 
-const category = ref(route.params.category); 
+// Declaración de variables reactivas
+const router = useRouter(); // Instancia del router para navegación
+const properties = ref([]); // Almacena las propiedades obtenidas de Firestore
+const route = useRoute(); // Obtiene la información de la ruta actual
+const category = ref(route.params.category); // Almacena la categoría obtenida de los parámetros de la ruta
 
+// Hook que se ejecuta al montar el componente
 onMounted(() => {
-  // Consultar propiedades según la categoría
+  // Consulta para obtener propiedades según la categoría
   const categoryQuery = query(
     collection(db, 'propiedades'),
-    where('tipo', '==', category.value)
+    where('tipo', '==', category.value) // Filtra las propiedades por tipo (categoría)
   );
 
   getDocs(categoryQuery).then((snap) => {
-    properties.value = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    properties.value = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })); // Mapea los documentos obtenidos a objetos
   });
 });
 function goToDetail(id) {
-  router.push(`/property/${id}`);
+  router.push(`/property/${id}`); 
 }
 </script>
 
 <template>
+  <!-- Vista principal de la categoría -->
   <section class="category-view">
     <h1>{{ category === 'venta' ? 'Places for Sale' : 'Places for Rent' }}</h1>
+    <!-- Mensaje si no hay propiedades disponibles -->
     <div v-if="properties.length === 0" class="no-properties">
       No properties available in this category.
     </div>
+    <!-- Listado de propiedades disponibles -->
     <div v-else class="properties-grid">
+      <!-- Itera sobre las propiedades para mostrarlas en tarjetas -->
       <div v-for="property in properties" :key="property.id" class="property-card" @click="goToDetail(property.id)" style="cursor:pointer;">
+        <!-- Imagen principal de la propiedad -->
         <img
-          :src="property.imagenes?.[0] || 'https://via.placeholder.com/300x200'"
+          :src="property.imagenes && property.imagenes[0] ? property.imagenes[0] : 'https://via.placeholder.com/300x200'"
           alt="Property Image"
           class="property-image"
         />
+        <!-- Información de la propiedad -->
         <div class="property-info">
           <h3>{{ property.titulo }}</h3>
           <p><b>Address:</b> {{ property.direccion }}</p>
           <p class="price">
+            <!-- Muestra el precio con descuento si aplica -->
             <span v-if="property.oferta">
               <b>Price:</b> <span class="discount">{{ property.precio - (property.descuento || 0) }} €</span>
               <span class="old-price">{{ property.precio }} €</span>
               <span class="discount-label">-{{ property.descuento }}€</span>
             </span>
+            <!-- Muestra el precio normal si no hay descuento -->
             <span v-else>
               <b>Price:</b> {{ property.precio }} €
             </span>

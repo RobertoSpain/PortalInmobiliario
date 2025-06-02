@@ -1,29 +1,31 @@
 <script setup>
-import { ref, onMounted, computed, watch, nextTick } from 'vue';
-import { useRoute } from 'vue-router';
-import { db } from '../../firebasej';
-import { doc, getDoc } from 'firebase/firestore';
+import { ref, onMounted, computed, watch, nextTick } from 'vue'; // ref para variables reactivas, onMounted para ejecutar código al montar el componente, computed para valores calculados, watch para observar cambios y nextTick para ejecutar código después de renderizar
+import { useRoute } from 'vue-router'; // useRoute para acceder a los parámetros de la ruta
+import { db } from '../../firebasej'; // Importa la configuración de Firebase
+import { doc, getDoc } from 'firebase/firestore'; // Métodos para interactuar con Firestore
 
-const route = useRoute();
-const property = ref(null);
-const loading = ref(true);
-const imageIndex = ref(0);
-const formattedAddress = ref('');
-let mapInstance = null;
+// Declaración de variables reactivas
+const route = useRoute(); // Obtiene la información de la ruta actual
+const property = ref(null); // Almacena los datos de la propiedad obtenida
+const loading = ref(true); // Indica si los datos están cargando
+const imageIndex = ref(0); // Índice de la imagen actual en el carrusel
+const formattedAddress = ref(''); // Dirección formateada obtenida de las coordenadas
+let mapInstance = null; // Instancia del mapa interactivo
 
+// Hook que se ejecuta al montar el componente
 onMounted(() => {
-  const id = route.params.id;
-  if (!id) return;
-  const docRef = doc(db, 'propiedades', id);
+  const id = route.params.id; // Obtiene el ID de la propiedad desde los parámetros de la ruta
+  if (!id) return; // Si no hay ID, no hace nada
+  const docRef = doc(db, 'propiedades', id); // Referencia al documento en Firestore
   getDoc(docRef).then(docSnap => {
     if (docSnap.exists()) {
-      property.value = { id: docSnap.id, ...docSnap.data() };
+      property.value = { id: docSnap.id, ...docSnap.data() }; // Almacena los datos de la propiedad
     }
-    loading.value = false;
-    // Leaflet solo si hay coordenadas
+    loading.value = false; // Cambia el estado de carga
+    // Inicializa Leaflet solo si hay coordenadas
     if (property.value && property.value.lat && property.value.lng) {
-      fetchAddressFromCoords(property.value.lat, property.value.lng);
-      if (!window.L) {
+      fetchAddressFromCoords(property.value.lat, property.value.lng); // Obtiene la dirección formateada
+      if (!window.L) { // Si Leaflet no está cargado, lo carga dinámicamente
         const leafletCss = document.createElement('link');
         leafletCss.rel = 'stylesheet';
         leafletCss.href = 'https://unpkg.com/leaflet/dist/leaflet.css';
@@ -31,61 +33,67 @@ onMounted(() => {
         const script = document.createElement('script');
         script.src = 'https://unpkg.com/leaflet/dist/leaflet.js';
         script.onload = () => {
-          nextTick().then(() => initMap());
+          nextTick().then(() => initMap()); // Inicializa el mapa después de cargar Leaflet
         };
         document.body.appendChild(script);
       } else {
-        nextTick().then(() => initMap());
+        nextTick().then(() => initMap()); // Inicializa el mapa si Leaflet ya está cargado
       }
     }
   });
 });
 
+// Función para obtener la dirección formateada desde las coordenadas
 function fetchAddressFromCoords(lat, lng) {
   fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`)
     .then(res => res.json())
     .then(data => {
-      formattedAddress.value = data.display_name || '';
+      formattedAddress.value = data.display_name || ''; // Almacena la dirección obtenida
     })
     .catch(() => {
-      formattedAddress.value = '';
+      formattedAddress.value = ''; // Manejo de errores
     });
 }
 
+// Función para inicializar el mapa interactivo con Leaflet
 function initMap() {
-  const L = window.L;
-  // Limpia el div si ya hay un mapa
-  const mapDiv = document.getElementById('map');
+  const L = window.L; // Accede a la librería Leaflet
+  const mapDiv = document.getElementById('map'); // Obtiene el div del mapa
   if (mapDiv) {
-    mapDiv.innerHTML = '';
+    mapDiv.innerHTML = ''; // Limpia el contenido del div si ya hay un mapa
   }
   if (mapInstance) {
-    mapInstance.remove();
+    mapInstance.remove(); // Elimina la instancia del mapa si existe
     mapInstance = null;
   }
-  mapInstance = L.map('map').setView([property.value.lat, property.value.lng], 13);
+  mapInstance = L.map('map').setView([property.value.lat, property.value.lng], 13); // Crea el mapa centrado en las coordenadas de la propiedad
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-  }).addTo(mapInstance);
+  }).addTo(mapInstance); // Agrega las capas del mapa
   L.marker([property.value.lat, property.value.lng]).addTo(mapInstance)
-    .bindPopup(property.value.titulo || 'Propiedad').openPopup();
+    .bindPopup(property.value.titulo || 'Propiedad').openPopup(); // Agrega un marcador con un popup
 }
 
+// Computed para calcular el total de imágenes disponibles
 const totalImages = computed(() => property.value?.imagenes?.length || 0);
 
+// Función para mostrar la imagen anterior en el carrusel
 function prevImage() {
   if (totalImages.value > 0) {
-    imageIndex.value = (imageIndex.value - 1 + totalImages.value) % totalImages.value;
-  }
-}
-function nextImage() {
-  if (totalImages.value > 0) {
-    imageIndex.value = (imageIndex.value + 1) % totalImages.value;
+    imageIndex.value = (imageIndex.value - 1 + totalImages.value) % totalImages.value; // Calcula el índice de la imagen anterior
   }
 }
 
+// Función para mostrar la siguiente imagen en el carrusel
+function nextImage() {
+  if (totalImages.value > 0) {
+    imageIndex.value = (imageIndex.value + 1) % totalImages.value; // Calcula el índice de la siguiente imagen
+  }
+}
+
+// Observa cambios en la propiedad y reinicia el índice de la imagen
 watch(property, () => {
-  imageIndex.value = 0;
+  imageIndex.value = 0; // Reinicia el índice de la imagen al cambiar la propiedad
 });
 </script>
 

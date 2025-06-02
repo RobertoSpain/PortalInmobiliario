@@ -3,9 +3,13 @@ import Navbar from './components/layout/Navbar.vue';
 </script>
 
 <template>
+  <!-- Contenedor principal de la aplicación -->
   <div class="app-container">
+    <!-- Barra de navegación superior (Navbar) -->
     <Navbar />
+    <!-- Contenido principal de la página -->
     <main class="main-content">
+      <!-- Aquí se renderizan las vistas según la ruta activa -->
       <router-view />
     </main>
   </div>

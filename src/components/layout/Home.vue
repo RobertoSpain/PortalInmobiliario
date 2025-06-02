@@ -1,28 +1,31 @@
 <script setup>
-import { ref, onMounted } from 'vue';
-import { db } from '../../firebasej';
-import { collection, getDocs } from 'firebase/firestore';
+// Importación de funciones y módulos necesarios
+import { ref, onMounted } from 'vue'; // ref para variables reactivas y onMounted para ejecutar código al montar el componente
+import { db } from '../../firebasej'; // Importa la configuración de Firebase
+import { collection, getDocs } from 'firebase/firestore'; // Métodos para interactuar con Firestore
 
-const productos = ref([]); 
-const currentIndex = ref(0); // Para controlar el carrusel
-const cargando = ref(true);
+// Declaración de variables reactivas
+const productos = ref([]); // Almacena los productos obtenidos de Firestore
+const currentIndex = ref(0); // Índice actual del carrusel
+const cargando = ref(true); // Estado de carga de los productos
 
+// Función para obtener productos desde Firestore
 function obtenerProductos() {
-  getDocs(collection(db, 'propiedades'))
+  getDocs(collection(db, 'propiedades')) // Obtiene documentos de la colección 'propiedades'
     .then((querySnapshot) => {
-      const productosObtenidos = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      // Toma aleatoriamente todos los productos y muestra primeros 5
-      const productosAleatorios = productosObtenidos.sort(() => Math.random() - 0.5).slice(0, 5);
-      productos.value = productosAleatorios;
+      const productosObtenidos = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); // Mapea los documentos obtenidos a objetos
+      const productosAleatorios = productosObtenidos.sort(() => Math.random() - 0.5).slice(0, 5); // Ordena aleatoriamente y selecciona los primeros 5
+      productos.value = productosAleatorios; // Actualiza la variable reactiva
     })
     .catch(error => {
-      console.error('Error al cargar los productos:', error);
+      console.error('Error al cargar los productos:', error); // Manejo de errores
     })
     .finally(() => {
-      cargando.value = false;
+      cargando.value = false; // Cambia el estado de carga
     });
 }
 
+// Ejecuta la función obtenerProductos al montar el componente
 onMounted(() => {
   obtenerProductos();
 });
@@ -30,40 +33,47 @@ onMounted(() => {
 </script>
 
 <template>
+  <!-- Sección principal de la página -->
   <section class="home">
     <h1 class="title">Explore</h1>
     <!-- Carrusel de productos aleatorios -->
     <div class="section">
       <h2 class="section-title">Recommended</h2>
       <div v-if="!cargando && productos.length > 0" class="carousel">
+        <!-- Itera sobre los productos para mostrarlos en el carrusel -->
         <div 
           v-for="(producto, idx) in productos" 
           :key="producto.id" 
           class="carousel-item" 
           :class="{ active: idx === currentIndex }"
         >
+          <!-- Imagen del producto -->
           <img 
             :src="(producto.imagenes && producto.imagenes[0]) || '/img/default.jpg'" 
             :alt="producto.titulo" 
             class="carousel-image" 
           />
+          <!-- Título del producto -->
           <div class="carousel-title-bar">
             <h3 class="carousel-title">{{ producto.titulo }}</h3>
           </div>
+          <!-- Información adicional del producto -->
           <div class="carousel-overlay">
             <div class="price-tag">
+              <!-- Muestra el precio con descuento si aplica -->
               <template v-if="producto.descuento && producto.descuento > 0">
                 €{{ producto.precio - producto.descuento }}
                 <span class="old-price" style="text-decoration:line-through; color:#888; margin-left:8px;">€{{ producto.precio }}</span>
                 <span class="discount-label" style="color:#e53935; margin-left:8px;">-{{ producto.descuento }}€</span>
               </template>
+              <!-- Muestra el precio normal si no hay descuento -->
               <template v-else>
                 €{{ producto.precio }}
               </template>
             </div>
           </div>
         </div>
-        <!-- Puntos del carrusel -->
+        <!-- Puntos del carrusel para navegación -->
         <div class="carousel-dots">
           <span 
             v-for="(_, idx) in productos" 
@@ -74,25 +84,27 @@ onMounted(() => {
           />
         </div>
       </div>
+      <!-- Mensaje si no hay productos disponibles -->
       <div v-else-if="!cargando" class="empty-state">
         <p>No hay productos aleatorios disponibles.</p>
       </div>
+      <!-- Mensaje de carga -->
       <div v-else class="empty-state">
         <p>Cargando productos...</p>
       </div>
     </div>
 
-    <!-- Categorías -->
+    <!-- Sección de categorías -->
     <div class="section">
       <h2 class="section-title">Categories</h2>
       <div class="categories-grid">
-        <!-- Categoría: Places for Rent -->
+        <!-- Categoría: Lugares en alquiler -->
         <router-link to="/category/alquiler" class="category-card">
           <img src="/img/renta.jpg" alt="Apartamentos en alquiler" class="category-image" />
           <div class="category-label">Places for Rent</div>
         </router-link>
 
-        <!-- Categoría: Places for Sale -->
+        <!-- Categoría: Lugares en venta -->
         <router-link to="/category/venta" class="category-card">
           <img src="/img/sale.jpg" alt="Propiedades en venta" class="category-image" />
           <div class="category-label">Places for Sale</div>
@@ -100,7 +112,7 @@ onMounted(() => {
       </div>
     </div>
   </section>
-  <!-- Bottom Navigation Bar -->
+  <!-- Barra de navegación inferior -->
   <nav class="bottom-nav">
     <router-link to="/" class="nav-item" exact-active-class="active">
       <span class="material-icons nav-icon">explore</span>
@@ -285,6 +297,9 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
+  margin-left: auto;
+  margin-right: auto;
+  width: 350px;
   height: 80px;
   background: #fff;
   box-shadow: 0 -2px 12px rgba(0,0,0,0.07);

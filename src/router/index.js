@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'; 
+import { createRouter, createWebHistory } from 'vue-router'; // Importa las funciones necesarias para crear el enrutador de Vue y usar el historial HTML5 (sin # en la URL)
 import Home from '../components/layout/Home.vue';
 import Login from '../components/layout/Login.vue';
 import Offers from '../components/layout/Offers.vue';
